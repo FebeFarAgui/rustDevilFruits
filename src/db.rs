@@ -2,7 +2,7 @@ use std::env;
 extern crate dotenv;
 use dotenv::dotenv;
 
-use crate::model::DevilFruit;
+use crate::models::DevilFruit;
 use futures::stream::StreamExt;
 use mongodb::{
     bson::{doc, extjson::de::Error, oid::ObjectId},
@@ -76,6 +76,55 @@ impl MongoRepo {
             .expect("Error getting devilfruit");
         Ok(devilfruit.unwrap())
     }
+    pub async fn get_devilfruit_by_type(&self, df_type: String) -> Result<Vec<DevilFruit>, Error> {
+        let devilfruits = self
+            .col
+            .find(
+                Some(doc! {
+                    "df_type": df_type
+                }),
+                None,
+            )
+            .await
+            .ok()
+            .expect("Error getting devilfruits");
+        let devilfruits = devilfruits
+            .filter_map(|item| async move { item.ok() })
+            .collect::<Vec<DevilFruit>>()
+            .await;
+        Ok(devilfruits)
+    }
+
+    pub async fn get_devilfruit_by_name(&self, name: String) -> Result<DevilFruit, Error> {
+        let devilfruit = self
+            .col
+            .find_one(
+                Some(doc! {
+                    "name": name
+                }),
+                None,
+            )
+            .await
+            .ok()
+            .expect("Error getting devilfruit");
+        Ok(devilfruit.unwrap())
+    }
+
+    pub async fn get_devilfruit_by_user(&self, user: String) -> Result<DevilFruit, Error> {
+        let devilfruit = self
+            .col
+            .find_one(
+                Some(doc! {
+                    "current_user": user
+                }),
+                None,
+            )
+            .await
+            .ok()
+            .expect("Error getting devilfruit");
+        Ok(devilfruit.unwrap())
+    }
+
     pub async fn delete_devilfruit_by_id(&self, id: String) -> Result<DeleteResult, Error> {
         let result = self
             .col

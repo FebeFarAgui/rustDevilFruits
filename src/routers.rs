@@ -1,8 +1,8 @@
 use crate::db::MongoRepo;
-use crate::model::DevilFruit;
+use crate::models::DevilFruit;
 use actix_web::{
     delete, get, patch, post,
-    web::{Data, Json, Path},
+    web::{Data, Json, Path, Query},
     HttpResponse, Responder,
 };
 
@@ -19,6 +19,45 @@ pub async fn get_all_devilfruits(db: Data<MongoRepo>) -> impl Responder {
 pub async fn get_devilfruit_by_id(db: Data<MongoRepo>, path: Path<String>) -> impl Responder {
     let id = path.into_inner();
     let devilfruit = db.get_devilfruit_by_id(id).await;
+    match devilfruit {
+        Ok(df) => HttpResponse::Ok().json(df),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
+}
+
+#[get("/devilfruit")]
+pub async fn get_devilfruit_by_name(
+    db: Data<MongoRepo>,
+    query: Query<DevilFruit>,
+) -> impl Responder {
+    let name = query.name.to_owned();
+    let devilfruit = db.get_devilfruit_by_name(name).await;
+    match devilfruit {
+        Ok(df) => HttpResponse::Ok().json(df),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
+}
+
+#[get("/devilfruit")]
+pub async fn get_devilfruit_by_type(
+    db: Data<MongoRepo>,
+    query: Query<DevilFruit>,
+) -> impl Responder {
+    let df_type = query.df_type.to_owned();
+    let devilfruit = db.get_devilfruit_by_type(df_type).await;
+    match devilfruit {
+        Ok(df) => HttpResponse::Ok().json(df),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
+}
+
+#[get("/devilfruit")]
+pub async fn get_devilfruit_by_user(
+    db: Data<MongoRepo>,
+    query: Query<DevilFruit>,
+) -> impl Responder {
+    let user = query.current_user.to_owned();
+    let devilfruit = db.get_devilfruit_by_user(user).await;
     match devilfruit {
         Ok(df) => HttpResponse::Ok().json(df),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),

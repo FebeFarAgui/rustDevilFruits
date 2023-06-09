@@ -2,7 +2,7 @@ use actix_web::{web, App, HttpResponse, HttpServer};
 use db::MongoRepo;
 
 mod db;
-mod model;
+mod models;
 mod routers;
 
 use routers::{
