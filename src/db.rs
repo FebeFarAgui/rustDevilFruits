@@ -6,7 +6,7 @@ use crate::model::DevilFruit;
 use futures::stream::StreamExt;
 use mongodb::{
     bson::{doc, extjson::de::Error, oid::ObjectId},
-    results::InsertOneResult,
+    results::{DeleteResult, InsertOneResult, UpdateResult},
     Client, Collection,
 };
 use std::str::FromStr;
@@ -75,5 +75,46 @@ impl MongoRepo {
             .ok()
             .expect("Error getting devilfruit");
         Ok(devilfruit.unwrap())
+    }
+    pub async fn delete_devilfruit_by_id(&self, id: String) -> Result<DeleteResult, Error> {
+        let result = self
+            .col
+            .delete_one(
+                doc! {
+                    "_id": ObjectId::from_str(&id).unwrap()
+                },
+                None,
+            )
+            .await
+            .ok()
+            .expect("Error deleting devilfruit");
+        Ok(result)
+    }
+    pub async fn update_devilfruit_by_id(
+        &self,
+        id: String,
+        patch: DevilFruit,
+    ) -> Result<UpdateResult, Error> {
+        let df = self
+            .col
+            .update_one(
+                doc! {
+                    "_id": ObjectId::from_str(&id).unwrap()
+                },
+                doc! {
+                    "$set": {
+                        "name": patch.name,
+                        "df_type": patch.df_type,
+                        "description": patch.description,
+                        "current_user": patch.current_user,
+                        "image_url": patch.image_url,
+                    }
+                },
+                None,
+            )
+            .await
+            .ok()
+            .expect("Error updating devilfruit");
+        Ok(df)
     }
 }

@@ -31,3 +31,4 @@ async fn main() -> std::io::Result<()> {
     println!("Server running at http://{}:{}", addr, port);
     server.await
 }
+
