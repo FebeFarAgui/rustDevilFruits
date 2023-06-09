@@ -1,6 +1,7 @@
 use actix_web::{web, App, HttpResponse, HttpServer};
 
 mod routers;
+mod model;
 
 use routers::{
     create_devilfruit, delete_devilfruit_by_id, get_all_devilfruits, get_devilfruit_by_id,
