@@ -3,6 +3,7 @@ extern crate dotenv;
 use dotenv::dotenv;
 
 use crate::model::DevilFruit;
+use futures::stream::StreamExt;
 use mongodb::{bson::extjson::de::Error, results::InsertOneResult, Client, Collection};
 
 pub struct MongoRepo {
@@ -42,5 +43,18 @@ impl MongoRepo {
             .ok()
             .expect("Error creating devilfruit");
         Ok(df)
+    }
+    pub async fn get_all_devilfruits(&self) -> Result<Vec<DevilFruit>, Error> {
+        let devilfruits = self
+            .col
+            .find(None, None)
+            .await
+            .ok()
+            .expect("Error getting devilfruits");
+        let devilfruits = devilfruits
+            .filter_map(|item| async move { item.ok() })
+            .collect::<Vec<DevilFruit>>()
+            .await;
+        Ok(devilfruits)
     }
 }

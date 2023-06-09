@@ -7,8 +7,12 @@ use actix_web::{
 };
 
 #[get("/devilfruit")]
-pub async fn get_all_devilfruits() -> impl Responder {
-    HttpResponse::Ok().body("All devilfruits")
+pub async fn get_all_devilfruits(db: Data<MongoRepo>) -> impl Responder {
+    let devilfruits = db.get_all_devilfruits().await;
+    match devilfruits {
+        Ok(df) => HttpResponse::Ok().json(df),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
 }
 
 #[get("/devilfruit/{id}")]
