@@ -2,7 +2,7 @@ use crate::db::MongoRepo;
 use crate::model::DevilFruit;
 use actix_web::{
     delete, get, patch, post,
-    web::{Data, Json},
+    web::{Data, Json, Path},
     HttpResponse, Responder,
 };
 
@@ -16,8 +16,13 @@ pub async fn get_all_devilfruits(db: Data<MongoRepo>) -> impl Responder {
 }
 
 #[get("/devilfruit/{id}")]
-pub async fn get_devilfruit_by_id() -> impl Responder {
-    HttpResponse::Ok().body("Devilfruit by id")
+pub async fn get_devilfruit_by_id(db: Data<MongoRepo>, path: Path<String>) -> impl Responder {
+    let id = path.into_inner();
+    let devilfruit = db.get_devilfruit_by_id(id).await;
+    match devilfruit {
+        Ok(df) => HttpResponse::Ok().json(df),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
 }
 
 #[post("/devilfruit")]

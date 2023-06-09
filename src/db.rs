@@ -4,7 +4,12 @@ use dotenv::dotenv;
 
 use crate::model::DevilFruit;
 use futures::stream::StreamExt;
-use mongodb::{bson::extjson::de::Error, results::InsertOneResult, Client, Collection};
+use mongodb::{
+    bson::{doc, extjson::de::Error, oid::ObjectId},
+    results::InsertOneResult,
+    Client, Collection,
+};
+use std::str::FromStr;
 
 pub struct MongoRepo {
     col: Collection<DevilFruit>,
@@ -56,5 +61,19 @@ impl MongoRepo {
             .collect::<Vec<DevilFruit>>()
             .await;
         Ok(devilfruits)
+    }
+    pub async fn get_devilfruit_by_id(&self, id: String) -> Result<DevilFruit, Error> {
+        let devilfruit = self
+            .col
+            .find_one(
+                Some(doc! {
+                    "_id": ObjectId::from_str(&id).unwrap()
+                }),
+                None,
+            )
+            .await
+            .ok()
+            .expect("Error getting devilfruit");
+        Ok(devilfruit.unwrap())
     }
 }
