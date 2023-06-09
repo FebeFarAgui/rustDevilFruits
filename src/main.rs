@@ -1,28 +1,27 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpResponse, HttpServer};
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
+mod routers;
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
-}
+use routers::{
+    create_devilfruit, delete_devilfruit_by_id, get_all_devilfruits, get_devilfruit_by_id,
+    update_devilfruit_by_id,
+};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    let addr = "127.0.0.1";
+    let port = 8080;
+    let server = HttpServer::new(|| {
         App::new()
-            .service(hello)
-            .service(echo)
-            .route("/hey", web::get().to(manual_hello))
+            .service(create_devilfruit)
+            .service(get_all_devilfruits)
+            .service(get_devilfruit_by_id)
+            .service(update_devilfruit_by_id)
+            .service(delete_devilfruit_by_id)
+            .default_service(web::route().to(|| HttpResponse::NotFound()))
     })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    .bind((addr, port))?
+    .run();
+    println!("Server running at http://{}:{}", addr, port);
+    server.await
 }
