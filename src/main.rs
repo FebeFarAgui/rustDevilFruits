@@ -1,7 +1,9 @@
 use actix_web::{web, App, HttpResponse, HttpServer};
+use db::MongoRepo;
 
-mod routers;
+mod db;
 mod model;
+mod routers;
 
 use routers::{
     create_devilfruit, delete_devilfruit_by_id, get_all_devilfruits, get_devilfruit_by_id,
@@ -12,8 +14,11 @@ use routers::{
 async fn main() -> std::io::Result<()> {
     let addr = "127.0.0.1";
     let port = 8080;
-    let server = HttpServer::new(|| {
+    let db = MongoRepo::init().await;
+    let db_data = web::Data::new(db);
+    let server = HttpServer::new(move || {
         App::new()
+            .app_data(db_data.clone())
             .service(create_devilfruit)
             .service(get_all_devilfruits)
             .service(get_devilfruit_by_id)
